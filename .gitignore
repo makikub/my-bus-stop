@@ -1,0 +1,48 @@
+# パブリックリポジトリ用 .gitignore
+# プライベートなデータや設定を除外
+
+# バックエンドコード（スクレイパー）
+backend/
+
+# デプロイメントスクリプト（AWS関連）
+deploy/cloudfront_update.sh
+deploy/s3_sync.sh
+
+# 開発用ディレクトリ
+frontend/
+
+# ドキュメント（プライベート用）
+作業管理表.md
+CLAUDE.md
+README_GITHUB_PAGES.md
+
+# セットアップスクリプト
+setup_github_pages.sh
+setup_public_repo.sh
+push_to_public.sh
+
+# Python関連
+*.pyc
+__pycache__/
+.python-version
+.venv/
+venv/
+env/
+
+# IDE設定
+.vscode/
+.idea/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# 一時ファイル
+*.tmp
+*.temp
+*.log
+
+# プライベート設定
+*.private
+.env
+.env.local
