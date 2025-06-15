@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>美住町バス比較</title>
-    <meta name="description" content="美住町バス停の茅ヶ崎駅行きと辻堂駅行きを比較するモバイル向けWebサイト">
+    <title id="page-title">バス時刻表</title>
+    <meta name="description" content="バス停の茅ヶ崎駅行きと辻堂駅行きを比較するモバイル向けWebサイト">
     <link rel="stylesheet" href="css/style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0066cc">
@@ -13,10 +13,19 @@
 <body>
     <div class="container">
         <header>
-            <h1>美住町バス比較</h1>
-            <p id="current-date">--年--月--日 (--)</p>
-            <p id="current-time">--:--</p>
-            <p id="calendar-type">平日ダイヤ</p>
+            <div class="header-top">
+                <h1 id="page-heading">バス時刻表</h1>
+                <div class="bus-stop-selector">
+                    <select id="bus-stop-select" aria-label="バス停選択">
+                        <option value="">読み込み中...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="time-info">
+                <p id="current-date">--年--月--日 (--)</p>
+                <p id="current-time">--:--</p>
+                <p id="calendar-type">平日ダイヤ</p>
+            </div>
         </header>
         
         <div class="bus-container">
@@ -45,6 +54,9 @@
         
         <footer>
             <p>データ更新時刻: <span id="last-updated">----/--/-- --:--</span></p>
+            <div class="settings-info">
+                <p id="current-bus-stop-info"></p>
+            </div>
         </footer>
     </div>
     

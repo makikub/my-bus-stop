@@ -1,226 +1,11 @@
 // グローバル変数
 let busData = null;
 let holidayData = null;
+let busStopsConfig = null;
+let currentBusStop = null;
 let currentDayType = 'weekday'; // 'weekday', 'saturday', 'holiday'
 const USE_SAMPLE_DATA = true; // 開発時はサンプルデータを使用
 const USE_INLINE_DATA = true; // ファイル読み込みエラー時はインラインデータを使用
-
-// インラインサンプルデータ（ファイル読み込みエラー時に使用）
-const INLINE_BUS_DATA = {
-  "chigasaki": {
-    "weekday": [
-      {"hour": "6", "minute": "21"},
-      {"hour": "6", "minute": "36"},
-      {"hour": "6", "minute": "55"},
-      {"hour": "7", "minute": "19"},
-      {"hour": "7", "minute": "48"},
-      {"hour": "8", "minute": "18"},
-      {"hour": "8", "minute": "58"},
-      {"hour": "9", "minute": "26"},
-      {"hour": "9", "minute": "56"},
-      {"hour": "10", "minute": "26"},
-      {"hour": "10", "minute": "56"},
-      {"hour": "11", "minute": "26"},
-      {"hour": "11", "minute": "56"},
-      {"hour": "12", "minute": "26"},
-      {"hour": "12", "minute": "56"},
-      {"hour": "13", "minute": "26"},
-      {"hour": "13", "minute": "56"},
-      {"hour": "14", "minute": "26"},
-      {"hour": "14", "minute": "56"},
-      {"hour": "15", "minute": "26"},
-      {"hour": "15", "minute": "56"},
-      {"hour": "16", "minute": "28"},
-      {"hour": "16", "minute": "56"},
-      {"hour": "17", "minute": "28"},
-      {"hour": "17", "minute": "56"},
-      {"hour": "18", "minute": "16"},
-      {"hour": "18", "minute": "36"},
-      {"hour": "18", "minute": "56"},
-      {"hour": "19", "minute": "16"},
-      {"hour": "19", "minute": "36"},
-      {"hour": "20", "minute": "26"},
-      {"hour": "20", "minute": "56"},
-      {"hour": "21", "minute": "26"},
-      {"hour": "21", "minute": "56"},
-      {"hour": "22", "minute": "31"}
-    ],
-    "saturday": [
-      {"hour": "6", "minute": "55"},
-      {"hour": "7", "minute": "25"},
-      {"hour": "7", "minute": "55"},
-      {"hour": "8", "minute": "25"},
-      {"hour": "8", "minute": "55"},
-      {"hour": "9", "minute": "25"},
-      {"hour": "9", "minute": "55"},
-      {"hour": "10", "minute": "25"},
-      {"hour": "10", "minute": "55"},
-      {"hour": "11", "minute": "25"},
-      {"hour": "11", "minute": "55"},
-      {"hour": "12", "minute": "25"},
-      {"hour": "12", "minute": "55"},
-      {"hour": "13", "minute": "25"},
-      {"hour": "13", "minute": "55"},
-      {"hour": "14", "minute": "25"},
-      {"hour": "14", "minute": "55"},
-      {"hour": "15", "minute": "25"},
-      {"hour": "15", "minute": "55"},
-      {"hour": "16", "minute": "25"},
-      {"hour": "16", "minute": "55"},
-      {"hour": "17", "minute": "25"},
-      {"hour": "17", "minute": "55"},
-      {"hour": "18", "minute": "25"},
-      {"hour": "18", "minute": "55"},
-      {"hour": "19", "minute": "25"},
-      {"hour": "19", "minute": "55"},
-      {"hour": "20", "minute": "25"},
-      {"hour": "20", "minute": "55"},
-      {"hour": "21", "minute": "25"},
-      {"hour": "21", "minute": "55"}
-    ],
-    "holiday": [
-      {"hour": "6", "minute": "55"},
-      {"hour": "7", "minute": "25"},
-      {"hour": "7", "minute": "55"},
-      {"hour": "8", "minute": "25"},
-      {"hour": "8", "minute": "55"},
-      {"hour": "9", "minute": "25"},
-      {"hour": "9", "minute": "55"},
-      {"hour": "10", "minute": "25"},
-      {"hour": "10", "minute": "55"},
-      {"hour": "11", "minute": "25"},
-      {"hour": "11", "minute": "55"},
-      {"hour": "12", "minute": "25"},
-      {"hour": "12", "minute": "55"},
-      {"hour": "13", "minute": "25"},
-      {"hour": "13", "minute": "55"},
-      {"hour": "14", "minute": "25"},
-      {"hour": "14", "minute": "55"},
-      {"hour": "15", "minute": "25"},
-      {"hour": "15", "minute": "55"},
-      {"hour": "16", "minute": "25"},
-      {"hour": "16", "minute": "55"},
-      {"hour": "17", "minute": "25"},
-      {"hour": "17", "minute": "55"},
-      {"hour": "18", "minute": "25"},
-      {"hour": "18", "minute": "55"},
-      {"hour": "19", "minute": "25"},
-      {"hour": "19", "minute": "55"},
-      {"hour": "20", "minute": "25"},
-      {"hour": "20", "minute": "55"},
-      {"hour": "21", "minute": "25"},
-      {"hour": "21", "minute": "55"}
-    ]
-  },
-  "tsujido": {
-    "weekday": [
-      {"hour": "5", "minute": "57"},
-      {"hour": "6", "minute": "16"},
-      {"hour": "6", "minute": "34"},
-      {"hour": "6", "minute": "46"},
-      {"hour": "6", "minute": "58"},
-      {"hour": "7", "minute": "10"},
-      {"hour": "7", "minute": "25"},
-      {"hour": "7", "minute": "40"},
-      {"hour": "7", "minute": "55"},
-      {"hour": "8", "minute": "17"},
-      {"hour": "8", "minute": "37"},
-      {"hour": "9", "minute": "05"},
-      {"hour": "9", "minute": "35"},
-      {"hour": "10", "minute": "05"},
-      {"hour": "10", "minute": "35"},
-      {"hour": "11", "minute": "05"},
-      {"hour": "11", "minute": "35"},
-      {"hour": "12", "minute": "05"},
-      {"hour": "12", "minute": "35"},
-      {"hour": "13", "minute": "05"},
-      {"hour": "13", "minute": "35"},
-      {"hour": "14", "minute": "05"},
-      {"hour": "14", "minute": "35"},
-      {"hour": "15", "minute": "05"},
-      {"hour": "15", "minute": "35"},
-      {"hour": "16", "minute": "07"},
-      {"hour": "16", "minute": "35"},
-      {"hour": "17", "minute": "07"},
-      {"hour": "17", "minute": "35"},
-      {"hour": "17", "minute": "55"},
-      {"hour": "18", "minute": "15"},
-      {"hour": "18", "minute": "35"},
-      {"hour": "18", "minute": "55"},
-      {"hour": "19", "minute": "15"},
-      {"hour": "19", "minute": "35"},
-      {"hour": "20", "minute": "05"},
-      {"hour": "20", "minute": "35"},
-      {"hour": "21", "minute": "05"},
-      {"hour": "21", "minute": "35"},
-      {"hour": "22", "minute": "10"}
-    ],
-    "saturday": [
-      {"hour": "6", "minute": "25"},
-      {"hour": "7", "minute": "05"},
-      {"hour": "7", "minute": "35"},
-      {"hour": "8", "minute": "05"},
-      {"hour": "8", "minute": "35"},
-      {"hour": "9", "minute": "05"},
-      {"hour": "9", "minute": "35"},
-      {"hour": "10", "minute": "05"},
-      {"hour": "10", "minute": "35"},
-      {"hour": "11", "minute": "05"},
-      {"hour": "11", "minute": "35"},
-      {"hour": "12", "minute": "05"},
-      {"hour": "12", "minute": "35"},
-      {"hour": "13", "minute": "05"},
-      {"hour": "13", "minute": "35"},
-      {"hour": "14", "minute": "05"},
-      {"hour": "14", "minute": "35"},
-      {"hour": "15", "minute": "05"},
-      {"hour": "15", "minute": "35"},
-      {"hour": "16", "minute": "05"},
-      {"hour": "16", "minute": "35"},
-      {"hour": "17", "minute": "05"},
-      {"hour": "17", "minute": "35"},
-      {"hour": "18", "minute": "05"},
-      {"hour": "18", "minute": "35"},
-      {"hour": "19", "minute": "05"},
-      {"hour": "19", "minute": "35"},
-      {"hour": "20", "minute": "05"},
-      {"hour": "20", "minute": "50"},
-      {"hour": "21", "minute": "50"}
-    ],
-    "holiday": [
-      {"hour": "6", "minute": "25"},
-      {"hour": "7", "minute": "05"},
-      {"hour": "7", "minute": "35"},
-      {"hour": "8", "minute": "05"},
-      {"hour": "8", "minute": "35"},
-      {"hour": "9", "minute": "05"},
-      {"hour": "9", "minute": "35"},
-      {"hour": "10", "minute": "05"},
-      {"hour": "10", "minute": "35"},
-      {"hour": "11", "minute": "05"},
-      {"hour": "11", "minute": "35"},
-      {"hour": "12", "minute": "05"},
-      {"hour": "12", "minute": "35"},
-      {"hour": "13", "minute": "05"},
-      {"hour": "13", "minute": "35"},
-      {"hour": "14", "minute": "05"},
-      {"hour": "14", "minute": "35"},
-      {"hour": "15", "minute": "05"},
-      {"hour": "15", "minute": "35"},
-      {"hour": "16", "minute": "05"},
-      {"hour": "16", "minute": "35"},
-      {"hour": "17", "minute": "05"},
-      {"hour": "17", "minute": "35"},
-      {"hour": "18", "minute": "05"},
-      {"hour": "18", "minute": "35"},
-      {"hour": "19", "minute": "05"},
-      {"hour": "19", "minute": "35"},
-      {"hour": "20", "minute": "05"},
-      {"hour": "20", "minute": "50"},
-      {"hour": "21", "minute": "50"}
-    ]
-  }
-};
 
 // インライン祝日データ
 const INLINE_HOLIDAY_DATA = {
@@ -238,36 +23,424 @@ const INLINE_HOLIDAY_DATA = {
 
 // ページ読み込み時の処理
 document.addEventListener('DOMContentLoaded', () => {
-    // 初期データ取得
-    fetchBusData();
-    fetchHolidayData();
-    
-    // 時計の開始
-    updateClock();
-    setInterval(updateClock, 1000);
-    
-    // バス時刻の定期更新（30秒ごと）
-    setInterval(updateBusTimes, 30000);
+    // バス停設定の初期化
+    initializeBusStops();
 });
 
-// バスデータの取得
-async function fetchBusData() {
+// バス停設定の初期化
+async function initializeBusStops() {
     try {
-        if (USE_INLINE_DATA) {
-            // インラインデータを使用
-            console.log('インラインバスデータを使用します');
-            busData = INLINE_BUS_DATA;
+        // バス停設定を読み込み
+        await loadBusStopsConfig();
+        
+        // URLパラメータまたはlocalStorageから選択されたバス停を取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlBusStop = urlParams.get('stop');
+        const savedBusStop = localStorage.getItem('selectedBusStop');
+        
+        // デフォルトバス停を決定
+        let initialBusStop = urlBusStop || savedBusStop;
+        
+        // 指定されたバス停が存在しない場合は設定のデフォルトを使用
+        if (!initialBusStop || !busStopsConfig.bus_stops[initialBusStop] || !busStopsConfig.bus_stops[initialBusStop].enabled) {
+            initialBusStop = busStopsConfig.default_stop || Object.keys(busStopsConfig.bus_stops).find(id => busStopsConfig.bus_stops[id].enabled);
+        }
+        
+        if (initialBusStop) {
+            await selectBusStop(initialBusStop);
+        }
+        
+        // 時計の開始
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // バス時刻の定期更新（30秒ごと）
+        setInterval(updateBusTimes, 30000);
+        
+    } catch (error) {
+        console.error('バス停設定の初期化に失敗しました:', error);
+        // フォールバック: 美住町のデータで初期化
+        fallbackToMisumi();
+    }
+}
+
+// バス停設定の読み込み
+async function loadBusStopsConfig() {
+    try {
+        const response = await fetch('../config/bus_stops.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        busStopsConfig = await response.json();
+        setupBusStopSelector();
+    } catch (error) {
+        console.error('バス停設定の読み込みに失敗しました:', error);
+        // フォールバック設定
+        busStopsConfig = {
+            bus_stops: {
+                misumi: {
+                    id: 'misumi',
+                    name: '美住町',
+                    display_name: '美住町バス停',
+                    enabled: true,
+                    default: true
+                }
+            },
+            default_stop: 'misumi',
+            data_files: {
+                misumi: 'sample_misumi_bus_timetable.json'
+            }
+        };
+        setupBusStopSelector();
+    }
+}
+
+// バス停選択UIのセットアップ
+function setupBusStopSelector() {
+    const select = document.getElementById('bus-stop-select');
+    select.innerHTML = '';
+    
+    // 有効なバス停のみを表示
+    Object.values(busStopsConfig.bus_stops)
+        .filter(stop => stop.enabled)
+        .forEach(stop => {
+            const option = document.createElement('option');
+            option.value = stop.id;
+            option.textContent = stop.display_name || stop.name;
+            select.appendChild(option);
+        });
+    
+    // 選択変更時のイベントリスナー
+    select.addEventListener('change', (e) => {
+        const selectedStop = e.target.value;
+        if (selectedStop) {
+            selectBusStop(selectedStop);
             
-            // 最終更新時間の表示
-            document.getElementById('last-updated').textContent = new Date().toLocaleString('ja-JP');
+            // localStorageに保存
+            localStorage.setItem('selectedBusStop', selectedStop);
             
-            // バス時刻の表示更新
+            // URLパラメータを更新（オプション）
+            const url = new URL(window.location);
+            url.searchParams.set('stop', selectedStop);
+            window.history.replaceState({}, '', url);
+        }
+    });
+}
+
+// バス停の選択
+async function selectBusStop(busStopId) {
+    try {
+        const busStop = busStopsConfig.bus_stops[busStopId];
+        if (!busStop || !busStop.enabled) {
+            throw new Error(`バス停 "${busStopId}" が見つからないか無効です`);
+        }
+        
+        currentBusStop = busStop;
+        
+        // UI要素の更新
+        updateUIForBusStop(busStop);
+        
+        // バス停選択UIの更新
+        document.getElementById('bus-stop-select').value = busStopId;
+        
+        // データの読み込み
+        await Promise.all([
+            fetchBusData(busStopId),
+            fetchHolidayData()
+        ]);
+        
+        console.log(`バス停を "${busStop.display_name}" に切り替えました`);
+        
+    } catch (error) {
+        console.error('バス停の選択に失敗しました:', error);
+        if (busStopId !== 'misumi') {
+            // フォールバック: 美住町に切り替え
+            fallbackToMisumi();
+        }
+    }
+}
+
+// UI要素をバス停に合わせて更新
+function updateUIForBusStop(busStop) {
+    // タイトルとヘッダーの更新
+    document.getElementById('page-title').textContent = `${busStop.display_name} - バス時刻表`;
+    document.getElementById('page-heading').textContent = busStop.display_name;
+    
+    // バス停情報の表示
+    const info = document.getElementById('current-bus-stop-info');
+    if (info) {
+        info.textContent = busStop.description || `${busStop.name}のバス時刻表を表示中`;
+    }
+}
+
+// 美住町にフォールバック
+function fallbackToMisumi() {
+    console.log('美住町のデータにフォールバック中...');
+    
+    // 美住町の基本設定
+    currentBusStop = {
+        id: 'misumi',
+        name: '美住町',
+        display_name: '美住町バス停',
+        description: '美住町バス停の茅ヶ崎駅・辻堂駅行きバス時刻表'
+    };
+    
+    updateUIForBusStop(currentBusStop);
+    
+    // インラインデータを使用
+    busData = getMisumiInlineData();
+    holidayData = INLINE_HOLIDAY_DATA;
+    
+    document.getElementById('last-updated').textContent = new Date().toLocaleString('ja-JP') + ' (内蔵データ)';
+    
+    // 時計とバス時刻の更新開始
+    updateClock();
+    setInterval(updateClock, 1000);
+    setInterval(updateBusTimes, 30000);
+    updateBusTimes();
+}
+
+// 美住町のインラインデータ
+function getMisumiInlineData() {
+    return {
+        "chigasaki": {
+            "weekday": [
+                {"hour": "6", "minute": "21"},
+                {"hour": "6", "minute": "36"},
+                {"hour": "6", "minute": "55"},
+                {"hour": "7", "minute": "19"},
+                {"hour": "7", "minute": "48"},
+                {"hour": "8", "minute": "18"},
+                {"hour": "8", "minute": "58"},
+                {"hour": "9", "minute": "26"},
+                {"hour": "9", "minute": "56"},
+                {"hour": "10", "minute": "26"},
+                {"hour": "10", "minute": "56"},
+                {"hour": "11", "minute": "26"},
+                {"hour": "11", "minute": "56"},
+                {"hour": "12", "minute": "26"},
+                {"hour": "12", "minute": "56"},
+                {"hour": "13", "minute": "26"},
+                {"hour": "13", "minute": "56"},
+                {"hour": "14", "minute": "26"},
+                {"hour": "14", "minute": "56"},
+                {"hour": "15", "minute": "26"},
+                {"hour": "15", "minute": "56"},
+                {"hour": "16", "minute": "28"},
+                {"hour": "16", "minute": "56"},
+                {"hour": "17", "minute": "28"},
+                {"hour": "17", "minute": "56"},
+                {"hour": "18", "minute": "16"},
+                {"hour": "18", "minute": "36"},
+                {"hour": "18", "minute": "56"},
+                {"hour": "19", "minute": "16"},
+                {"hour": "19", "minute": "36"},
+                {"hour": "20", "minute": "26"},
+                {"hour": "20", "minute": "56"},
+                {"hour": "21", "minute": "26"},
+                {"hour": "21", "minute": "56"},
+                {"hour": "22", "minute": "31"}
+            ],
+            "saturday": [
+                {"hour": "6", "minute": "55"},
+                {"hour": "7", "minute": "25"},
+                {"hour": "7", "minute": "55"},
+                {"hour": "8", "minute": "25"},
+                {"hour": "8", "minute": "55"},
+                {"hour": "9", "minute": "25"},
+                {"hour": "9", "minute": "55"},
+                {"hour": "10", "minute": "25"},
+                {"hour": "10", "minute": "55"},
+                {"hour": "11", "minute": "25"},
+                {"hour": "11", "minute": "55"},
+                {"hour": "12", "minute": "25"},
+                {"hour": "12", "minute": "55"},
+                {"hour": "13", "minute": "25"},
+                {"hour": "13", "minute": "55"},
+                {"hour": "14", "minute": "25"},
+                {"hour": "14", "minute": "55"},
+                {"hour": "15", "minute": "25"},
+                {"hour": "15", "minute": "55"},
+                {"hour": "16", "minute": "25"},
+                {"hour": "16", "minute": "55"},
+                {"hour": "17", "minute": "25"},
+                {"hour": "17", "minute": "55"},
+                {"hour": "18", "minute": "25"},
+                {"hour": "18", "minute": "55"},
+                {"hour": "19", "minute": "25"},
+                {"hour": "19", "minute": "55"},
+                {"hour": "20", "minute": "25"},
+                {"hour": "20", "minute": "55"},
+                {"hour": "21", "minute": "25"},
+                {"hour": "21", "minute": "55"}
+            ],
+            "holiday": [
+                {"hour": "6", "minute": "55"},
+                {"hour": "7", "minute": "25"},
+                {"hour": "7", "minute": "55"},
+                {"hour": "8", "minute": "25"},
+                {"hour": "8", "minute": "55"},
+                {"hour": "9", "minute": "25"},
+                {"hour": "9", "minute": "55"},
+                {"hour": "10", "minute": "25"},
+                {"hour": "10", "minute": "55"},
+                {"hour": "11", "minute": "25"},
+                {"hour": "11", "minute": "55"},
+                {"hour": "12", "minute": "25"},
+                {"hour": "12", "minute": "55"},
+                {"hour": "13", "minute": "25"},
+                {"hour": "13", "minute": "55"},
+                {"hour": "14", "minute": "25"},
+                {"hour": "14", "minute": "55"},
+                {"hour": "15", "minute": "25"},
+                {"hour": "15", "minute": "55"},
+                {"hour": "16", "minute": "25"},
+                {"hour": "16", "minute": "55"},
+                {"hour": "17", "minute": "25"},
+                {"hour": "17", "minute": "55"},
+                {"hour": "18", "minute": "25"},
+                {"hour": "18", "minute": "55"},
+                {"hour": "19", "minute": "25"},
+                {"hour": "19", "minute": "55"},
+                {"hour": "20", "minute": "25"},
+                {"hour": "20", "minute": "55"},
+                {"hour": "21", "minute": "25"},
+                {"hour": "21", "minute": "55"}
+            ]
+        },
+        "tsujido": {
+            "weekday": [
+                {"hour": "5", "minute": "57"},
+                {"hour": "6", "minute": "16"},
+                {"hour": "6", "minute": "34"},
+                {"hour": "6", "minute": "46"},
+                {"hour": "6", "minute": "58"},
+                {"hour": "7", "minute": "10"},
+                {"hour": "7", "minute": "25"},
+                {"hour": "7", "minute": "40"},
+                {"hour": "7", "minute": "55"},
+                {"hour": "8", "minute": "17"},
+                {"hour": "8", "minute": "37"},
+                {"hour": "9", "minute": "05"},
+                {"hour": "9", "minute": "35"},
+                {"hour": "10", "minute": "05"},
+                {"hour": "10", "minute": "35"},
+                {"hour": "11", "minute": "05"},
+                {"hour": "11", "minute": "35"},
+                {"hour": "12", "minute": "05"},
+                {"hour": "12", "minute": "35"},
+                {"hour": "13", "minute": "05"},
+                {"hour": "13", "minute": "35"},
+                {"hour": "14", "minute": "05"},
+                {"hour": "14", "minute": "35"},
+                {"hour": "15", "minute": "05"},
+                {"hour": "15", "minute": "35"},
+                {"hour": "16", "minute": "07"},
+                {"hour": "16", "minute": "35"},
+                {"hour": "17", "minute": "07"},
+                {"hour": "17", "minute": "35"},
+                {"hour": "17", "minute": "55"},
+                {"hour": "18", "minute": "15"},
+                {"hour": "18", "minute": "35"},
+                {"hour": "18", "minute": "55"},
+                {"hour": "19", "minute": "15"},
+                {"hour": "19", "minute": "35"},
+                {"hour": "20", "minute": "05"},
+                {"hour": "20", "minute": "35"},
+                {"hour": "21", "minute": "05"},
+                {"hour": "21", "minute": "35"},
+                {"hour": "22", "minute": "10"}
+            ],
+            "saturday": [
+                {"hour": "6", "minute": "25"},
+                {"hour": "7", "minute": "05"},
+                {"hour": "7", "minute": "35"},
+                {"hour": "8", "minute": "05"},
+                {"hour": "8", "minute": "35"},
+                {"hour": "9", "minute": "05"},
+                {"hour": "9", "minute": "35"},
+                {"hour": "10", "minute": "05"},
+                {"hour": "10", "minute": "35"},
+                {"hour": "11", "minute": "05"},
+                {"hour": "11", "minute": "35"},
+                {"hour": "12", "minute": "05"},
+                {"hour": "12", "minute": "35"},
+                {"hour": "13", "minute": "05"},
+                {"hour": "13", "minute": "35"},
+                {"hour": "14", "minute": "05"},
+                {"hour": "14", "minute": "35"},
+                {"hour": "15", "minute": "05"},
+                {"hour": "15", "minute": "35"},
+                {"hour": "16", "minute": "05"},
+                {"hour": "16", "minute": "35"},
+                {"hour": "17", "minute": "05"},
+                {"hour": "17", "minute": "35"},
+                {"hour": "18", "minute": "05"},
+                {"hour": "18", "minute": "35"},
+                {"hour": "19", "minute": "05"},
+                {"hour": "19", "minute": "35"},
+                {"hour": "20", "minute": "05"},
+                {"hour": "20", "minute": "50"},
+                {"hour": "21", "minute": "50"}
+            ],
+            "holiday": [
+                {"hour": "6", "minute": "25"},
+                {"hour": "7", "minute": "05"},
+                {"hour": "7", "minute": "35"},
+                {"hour": "8", "minute": "05"},
+                {"hour": "8", "minute": "35"},
+                {"hour": "9", "minute": "05"},
+                {"hour": "9", "minute": "35"},
+                {"hour": "10", "minute": "05"},
+                {"hour": "10", "minute": "35"},
+                {"hour": "11", "minute": "05"},
+                {"hour": "11", "minute": "35"},
+                {"hour": "12", "minute": "05"},
+                {"hour": "12", "minute": "35"},
+                {"hour": "13", "minute": "05"},
+                {"hour": "13", "minute": "35"},
+                {"hour": "14", "minute": "05"},
+                {"hour": "14", "minute": "35"},
+                {"hour": "15", "minute": "05"},
+                {"hour": "15", "minute": "35"},
+                {"hour": "16", "minute": "05"},
+                {"hour": "16", "minute": "35"},
+                {"hour": "17", "minute": "05"},
+                {"hour": "17", "minute": "35"},
+                {"hour": "18", "minute": "05"},
+                {"hour": "18", "minute": "35"},
+                {"hour": "19", "minute": "05"},
+                {"hour": "19", "minute": "35"},
+                {"hour": "20", "minute": "05"},
+                {"hour": "20", "minute": "50"},
+                {"hour": "21", "minute": "50"}
+            ]
+        }
+    };
+}
+
+// バスデータの取得
+async function fetchBusData(busStopId) {
+    try {
+        // データファイル名を取得
+        const filename = busStopsConfig.data_files[busStopId];
+        if (!filename) {
+            throw new Error(`バス停 "${busStopId}" のデータファイルが設定されていません`);
+        }
+        
+        if (USE_INLINE_DATA && busStopId === 'misumi') {
+            // 美住町のインラインデータを使用
+            console.log('美住町のインラインデータを使用します');
+            busData = getMisumiInlineData();
+            
+            document.getElementById('last-updated').textContent = new Date().toLocaleString('ja-JP') + ' (内蔵データ)';
             updateBusTimes();
             return;
         }
         
         // 開発時はサンプルデータを使用
-        const dataUrl = USE_SAMPLE_DATA ? 'data/sample_bus_timetable.json' : 'data/bus_timetable.json';
+        const dataUrl = USE_SAMPLE_DATA ? `data/${filename}` : `data/${filename.replace('sample_', '')}`;
         console.log(`ファイルからデータを読み込みます: ${dataUrl}`);
         const response = await fetch(dataUrl);
         
@@ -285,10 +458,10 @@ async function fetchBusData() {
     } catch (error) {
         console.error('バスデータの取得に失敗しました:', error);
         
-        if (USE_INLINE_DATA) {
-            // エラー時にインラインデータを使用
-            console.log('ファイル読み込みエラーのためインラインデータを使用します');
-            busData = INLINE_BUS_DATA;
+        if (USE_INLINE_DATA && busStopId === 'misumi') {
+            // エラー時に美住町のインラインデータを使用
+            console.log('ファイル読み込みエラーのため美住町のインラインデータを使用します');
+            busData = getMisumiInlineData();
             document.getElementById('last-updated').textContent = new Date().toLocaleString('ja-JP') + ' (内蔵データ)';
             updateBusTimes();
             return;
