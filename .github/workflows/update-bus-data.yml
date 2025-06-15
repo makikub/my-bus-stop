@@ -1,0 +1,243 @@
+name: Update Bus Data
+
+on:
+  # 1日3回実行（朝6時、昼12時、夕方6時 JST）
+  schedule:
+    - cron: '0 21 * * *'  # UTC 21:00 = JST 6:00
+    - cron: '0 3 * * *'   # UTC 3:00 = JST 12:00
+    - cron: '0 9 * * *'   # UTC 9:00 = JST 18:00
+  # 手動実行も可能
+  workflow_dispatch:
+    inputs:
+      full_update:
+        description: 'フル更新（祝日データ含む）を実行'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 lxml jpholiday urllib3
+    
+    - name: Check if first day of month
+      id: check_date
+      run: |
+        if [ $(date +%d) -eq 1 ] || [ "${{ github.event.inputs.full_update }}" == "true" ]; then
+          echo "is_full_update=true" >> $GITHUB_OUTPUT
+        else
+          echo "is_full_update=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create inline scraper
+      run: |
+        cat > scraper.py << 'SCRIPT_EOF'
+import os
+import json
+import datetime
+import requests
+from bs4 import BeautifulSoup
+import jpholiday
+import urllib3
+import argparse
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+URLs = {
+    'chigasaki': 'https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000802161-6&nid=00127236',
+    'tsujido': 'https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000801834-12&nid=00127236'
+}
+
+def ensure_output_dir(output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+def fetch_timetable(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
+    }
+    try:
+        response = requests.get(url, headers=headers, verify=False, timeout=30)
+        response.encoding = 'utf-8'
+        return response.text if response.status_code == 200 else None
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return None
+
+def parse_timetable_from_table(table):
+    timetable_data = []
+    if not table:
+        return []
+    
+    rows = table.select('tr')
+    for row in rows:
+        cells = row.select('td')
+        if len(cells) < 2:
+            continue
+        
+        hour_text = cells[0].text.strip()
+        if not hour_text or '時' not in hour_text:
+            continue
+        
+        hour = hour_text.replace('時', '')
+        minute_cell = cells[1]
+        minute_items = minute_cell.select('li')
+        
+        if not minute_items:
+            minute_text = minute_cell.text.strip()
+            if minute_text:
+                minutes = minute_text.split()
+                for minute in minutes:
+                    if minute.isdigit():
+                        timetable_data.append({'hour': hour, 'minute': minute})
+        else:
+            for minute_item in minute_items:
+                minute = minute_item.text.strip()
+                if minute.isdigit():
+                    timetable_data.append({'hour': hour, 'minute': minute})
+    
+    return timetable_data
+
+def fetch_all_day_types(url):
+    all_days_data = {}
+    base_html = fetch_timetable(url)
+    
+    if not base_html:
+        return {'weekday': [], 'saturday': [], 'holiday': []}
+    
+    soup = BeautifulSoup(base_html, 'lxml')
+    tables = soup.select('table')
+    
+    if len(tables) >= 3:
+        weekday_data = parse_timetable_from_table(tables[2])
+        all_days_data['weekday'] = weekday_data
+    else:
+        all_days_data['weekday'] = []
+    
+    all_days_data['saturday'] = []
+    all_days_data['holiday'] = []
+    
+    return all_days_data
+
+def save_timetable(data, output_dir, filename='bus_timetable.json'):
+    output_path = os.path.join(output_dir, filename)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"Saved timetable to {output_path}")
+
+def generate_holiday_data(output_dir, months_ahead=6):
+    today = datetime.date.today()
+    end_date = today + datetime.timedelta(days=30*months_ahead)
+    holidays = {}
+    current_date = today
+    
+    try:
+        while current_date <= end_date:
+            if jpholiday.is_holiday(current_date):
+                try:
+                    holiday_name = jpholiday.holiday_name(current_date)
+                except:
+                    holiday_name = "祝日"
+                holidays[current_date.isoformat()] = holiday_name
+            current_date += datetime.timedelta(days=1)
+    except Exception as e:
+        print(f"Error generating holiday data: {e}")
+        holidays = {
+            "2025-04-29": "昭和の日",
+            "2025-05-03": "憲法記念日",
+            "2025-05-04": "みどりの日",
+            "2025-05-05": "こどもの日"
+        }
+    
+    holiday_path = os.path.join(output_dir, 'holidays.json')
+    with open(holiday_path, 'w', encoding='utf-8') as f:
+        json.dump(holidays, f, ensure_ascii=False, indent=2)
+    print(f"Saved holiday data to {holiday_path}")
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--timetable-only', action='store_true')
+    parser.add_argument('--holidays-only', action='store_true')
+    args = parser.parse_args()
+    
+    output_dir = 'docs/data'
+    ensure_output_dir(output_dir)
+    
+    if not args.holidays_only:
+        result = {}
+        for direction, url in URLs.items():
+            print(f"Processing {direction} direction...")
+            all_days_data = fetch_all_day_types(url)
+            if all_days_data:
+                result[direction] = all_days_data
+        save_timetable(result, output_dir)
+    
+    if not args.timetable_only:
+        generate_holiday_data(output_dir)
+    
+    print("Scraping completed successfully!")
+
+if __name__ == "__main__":
+    main()
+SCRIPT_EOF
+    
+    - name: Run scraper
+      run: |
+        if [ "${{ steps.check_date.outputs.is_full_update }}" == "true" ]; then
+          echo "Running full update..."
+          python scraper.py
+        else
+          echo "Running timetable-only update..."
+          python scraper.py --timetable-only
+        fi
+      continue-on-error: true
+    
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        git add docs/data/*.json 2>/dev/null || true
+        
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          if [ "${{ steps.check_date.outputs.is_full_update }}" == "true" ]; then
+            COMMIT_MSG="🚌 Update bus data (monthly full update)"
+          else
+            COMMIT_MSG="🚌 Update bus timetable data"
+          fi
+          
+          git commit -m "$COMMIT_MSG"
+          git push
+          echo "Changes committed and pushed"
+        fi
+    
+    - name: Summary
+      if: always()
+      run: |
+        echo "## 実行サマリー" >> $GITHUB_STEP_SUMMARY
+        echo "- 実行日時: $(date +'%Y-%m-%d %H:%M:%S JST' -d '+9 hours')" >> $GITHUB_STEP_SUMMARY
+        echo "- フル更新: ${{ steps.check_date.outputs.is_full_update }}" >> $GITHUB_STEP_SUMMARY
+        if [ -f docs/data/bus_timetable.json ]; then
+          echo "- 時刻表データ: ✅ 更新済み" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- 時刻表データ: ❌ 更新失敗" >> $GITHUB_STEP_SUMMARY
+        fi

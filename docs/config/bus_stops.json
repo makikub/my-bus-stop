@@ -1,0 +1,51 @@
+{
+  "bus_stops": {
+    "misumi": {
+      "id": "misumi",
+      "name": "美住町",
+      "display_name": "美住町バス停",
+      "description": "美住町バス停の茅ヶ崎駅・辻堂駅行きバス時刻表",
+      "directions": {
+        "chigasaki": {
+          "name": "茅ヶ崎駅行き",
+          "url": "https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000802161-6&nid=00127236"
+        },
+        "tsujido": {
+          "name": "辻堂駅行き", 
+          "url": "https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000801834-12&nid=00127236"
+        }
+      },
+      "enabled": true,
+      "default": true
+    },
+    "hibarigaoka": {
+      "id": "hibarigaoka",
+      "name": "ひばりヶ丘",
+      "display_name": "ひばりヶ丘バス停",
+      "description": "ひばりヶ丘バス停のバス時刻表",
+      "directions": {
+        "chigasaki": {
+          "name": "茅ヶ崎駅行き",
+          "url": "https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000802161-5&nid=00127236"
+        },
+        "tsujido": {
+          "name": "辻堂駅行き",
+          "url": "https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000801834-11&nid=00127236"
+        }
+      },
+      "enabled": true,
+      "default": false
+    }
+  },
+  "default_stop": "misumi",
+  "data_files": {
+    "misumi": "misumi_bus_timetable.json",
+    "hibarigaoka": "hibarigaoka_bus_timetable.json",
+    "holidays": "holidays.json"
+  },
+  "settings": {
+    "scraping_interval": "3_times_daily",
+    "timeout": 30,
+    "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+  }
+}
