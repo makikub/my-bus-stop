@@ -26,11 +26,11 @@
       "directions": {
         "chigasaki": {
           "name": "茅ヶ崎駅行き",
-          "url": "https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000802161-5&nid=00127236"
+          "url": "https://www.kanachu.co.jp/dia/diagram/timetable/cs:0000802161-7/nid:00127237/rt:0/k:%E3%81%B2%E3%81%B0%E3%82%8A%E3%83%B6%E4%B8%98"
         },
         "tsujido": {
           "name": "辻堂駅行き",
-          "url": "https://www.kanachu.co.jp/sp/diagram/timetable01?cs=0000801834-11&nid=00127236"
+          "url": "https://www.kanachu.co.jp/dia/diagram/timetable/cs:0000801834-11/nid:00127237/rt:0/k:%E3%81%B2%E3%81%B0%E3%82%8A%E3%83%B6%E4%B8%98"
         }
       },
       "enabled": true,
@@ -39,8 +39,8 @@
   },
   "default_stop": "misumi",
   "data_files": {
-    "misumi": "misumi_bus_timetable.json",
-    "hibarigaoka": "hibarigaoka_bus_timetable.json",
+    "misumi": "sample_misumi_bus_timetable.json",
+    "hibarigaoka": "sample_hibarigaoka_bus_timetable.json",
     "holidays": "holidays.json"
   },
   "settings": {
