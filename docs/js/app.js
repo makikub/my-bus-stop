@@ -67,7 +67,7 @@ async function initializeBusStops() {
 // バス停設定の読み込み
 async function loadBusStopsConfig() {
     try {
-        const response = await fetch('../config/bus_stops.json');
+        const response = await fetch('config/bus_stops.json');
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -85,11 +85,19 @@ async function loadBusStopsConfig() {
                     display_name: '美住町バス停',
                     enabled: true,
                     default: true
+                },
+                hibarigaoka: {
+                    id: 'hibarigaoka',
+                    name: 'ひばりヶ丘',
+                    display_name: 'ひばりヶ丘バス停',
+                    enabled: true,
+                    default: false
                 }
             },
             default_stop: 'misumi',
             data_files: {
-                misumi: 'sample_misumi_bus_timetable.json'
+                misumi: 'sample_misumi_bus_timetable.json',
+                hibarigaoka: 'sample_hibarigaoka_bus_timetable.json'
             }
         };
         setupBusStopSelector();
@@ -99,7 +107,19 @@ async function loadBusStopsConfig() {
 // バス停選択UIのセットアップ
 function setupBusStopSelector() {
     const select = document.getElementById('bus-stop-select');
+    if (!select) {
+        console.error('バス停選択セレクタが見つかりません');
+        return;
+    }
+    
     select.innerHTML = '';
+    
+    // 読み込み中表示を削除
+    const loadingOption = document.createElement('option');
+    loadingOption.value = '';
+    loadingOption.textContent = 'バス停を選択してください';
+    loadingOption.disabled = true;
+    select.appendChild(loadingOption);
     
     // 有効なバス停のみを表示
     Object.values(busStopsConfig.bus_stops)
